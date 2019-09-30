@@ -5,26 +5,27 @@ import java.io.*;
 import java.net.*;
 
 class ClienteTCP {
-	public static void main(String args[]) throws UnknownHostException {
+	public static void main(String args[]) {
 		// Leemos el primer parámetro, donde debe ir la dirección
 		// IP del servidor
-		InetAddress direcc = InetAddress.getByAddress(new byte[] { 10, 0, 2, 15 });
+		InetAddress direcc = null;
+		byte[] ip = new byte[] { (byte) 192, (byte) 168, (byte)40,(byte) 245 };
 		try {
-			direcc = InetAddress.getByName(args[0]);
+			direcc = InetAddress.getByAddress(ip);
 		} catch (UnknownHostException uhe) {
 			System.err.println("Host no encontrado : " + uhe);
 			System.exit(-1);
 		}
 		// Puerto que hemos usado para el servidor
-		int puerto = 1234;
+		int puerto = 36988;
 		// Para cada uno de los argumentos...
-		for (int n = 1; n < args.length; n++) {
+		for (int n = 1; n < 10; n++) {
 			Socket sckt = null;
 			DataInputStream dis = null;
 			DataOutputStream dos = null;
 			try {
 				// Convertimos el texto en número
-				int numero = Integer.parseInt(args[n]);
+				int numero = 9;
 				// Creamos el Socket
 				sckt = new Socket(direcc, puerto);
 				// Extraemos los streams de entrada y salida

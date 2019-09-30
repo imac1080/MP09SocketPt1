@@ -15,7 +15,7 @@ class ServidorTCP {
 		// Abrimos un "Socket de Servidor" TCP en el puerto 1234.
 		ServerSocket ss = null;
 		try {
-			ss = new ServerSocket(1234);
+			ss = new ServerSocket(9972);
 		} catch (IOException ioe) {
 			System.err.println("Error al abrir el socket de servidor : " + ioe);
 			System.exit(-1);
@@ -34,7 +34,8 @@ class ServidorTCP {
 				// Nº de puerto remoto
 				int puerto = sckt.getPort();
 				// Dirección de Internet remota
-				InetAddress direcc = sckt.getInetAddress();
+				byte[] ip = new byte[] { (byte) 192, (byte) 168, (byte) 41,(byte) 201 };
+				InetAddress direcc = InetAddress.getByAddress(ip);
 				// Leemos datos de la peticion
 				entrada = dis.readInt();
 				// Calculamos resultado
