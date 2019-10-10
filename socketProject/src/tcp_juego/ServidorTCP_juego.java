@@ -1,8 +1,13 @@
 package tcp_juego;
 
-//ServidorTCP.java
-import java.io.*;
-import java.net.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.concurrent.ThreadLocalRandom;
 
 class ServidorTCP_juego {
 	public static void main(String args[]) {
@@ -15,15 +20,17 @@ class ServidorTCP_juego {
 		// Abrimos un "Socket de Servidor" TCP en el puerto 1234.
 		ServerSocket ss = null;
 		try {
-			ss = new ServerSocket(9972);
+			ss = new ServerSocket(12449);
 		} catch (IOException ioe) {
 			System.err.println("Error al abrir el socket de servidor : " + ioe);
 			System.exit(-1);
 		}
-		int entrada;
-		long salida;
+
 		// Bucle infinito
-		while (true) {
+		int puntuacionCliente = 0;
+		int puntuacionServidor = 0;
+		boolean cerrar = true;
+		while (cerrar) {
 			try {
 				// Esperamos a que alguien se conecte a nuestro Socket
 				Socket sckt = ss.accept();
@@ -34,24 +41,68 @@ class ServidorTCP_juego {
 				// Nº de puerto remoto
 				int puerto = sckt.getPort();
 				// Dirección de Internet remota
-				byte[] ip = new byte[] { (byte) 192, (byte) 168, (byte) 41,(byte) 201 };
+				byte[] ip = new byte[] { (byte) 192, (byte) 168, (byte) 40, (byte) 187 };
 				InetAddress direcc = InetAddress.getByAddress(ip);
 				// Leemos datos de la peticion
+				int entrada;
+				String salida;
 				entrada = dis.readInt();
 				// Calculamos resultado
-				salida = (long) entrada * (long) entrada;
+				String resultado;
+				int tirada = ThreadLocalRandom.current().nextInt(1, 3 + 1);
+				String mano;
+
+				if (tirada == 1) {
+					mano = "PIEDRA";
+				} else if (tirada == 2) {
+					mano = "PAPEL";
+				} else {
+					mano = "TIJERA";
+				}
+
+				if (entrada == tirada) {
+					resultado = "EMPATE";
+
+					// 1.Piedra 2.Papel 3.Tijera
+				} else if ((entrada == 1 && tirada == 3) || (entrada == 2 && tirada == 1)
+						|| (entrada == 3 && tirada == 2)) {
+					resultado = "RONDA GANADA";
+					puntuacionCliente++;
+				} else {
+					resultado = "RONDA PERDIDA";
+					puntuacionServidor++;
+				}
+				String tabla = " (" + Integer.toString(puntuacionCliente) + " - " + Integer.toString(puntuacionServidor)
+						+ ")";
+				if (puntuacionCliente == 3) {
+					salida = "¡VICTORIA!¡HAS GANADO!" + tabla;
+					cerrar = false;
+				} else if (puntuacionServidor == 3) {
+					salida = "Oooh... Has perdido" + tabla;
+					cerrar = false;
+				} else {
+					salida = resultado + tabla + "\nEl rival ha sacado " + mano;
+				}
 				// Escribimos el resultado
-				dos.writeLong(salida);
+				dos.writeUTF(salida);
+				dos.writeBoolean(cerrar);
 				// Cerramos los streams
 				dis.close();
 				dos.close();
 				sckt.close();
 				// Registramos en salida estandard
-				System.out.println(
-						"Cliente = " + direcc + ":" + puerto + "\tEntrada = " + entrada + "\tSalida = " + salida);
+				System.out.println("Cliente = " + direcc + ":" + puerto + "\tEntrada = " + entrada
+						+ "\tNumero Random: " + tirada + "\tSalida = " + salida);
+
 			} catch (Exception e) {
 				System.err.println("Se ha producido la excepción : " + e);
 			}
+		}
+		try {
+			ss.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
